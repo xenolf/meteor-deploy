@@ -2,6 +2,16 @@ meteor-deploy
 =============
 
 Deploy meteor applications to your own servers.
+This package will deploy your meteor application in a way to be able to rollback to a previous deployment.
+Basic filestructure is:
+```
+/<configured remote path>/<environment>/
+  .payloads
+    <projectName>-<deployment timestamp>
+    ...
+  <ProjectName> -> symlink to current deployment
+  <ProjectName-previous> -> symlink to previous deployment
+```
 
 ### Installation
 ```
