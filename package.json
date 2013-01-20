@@ -1,0 +1,26 @@
+{
+  "name": "meteor-deploy",
+  "version": "0.1.0",
+  "description": "Deploy meteor apps to your custom server using SSH!",
+  "bin": {
+      "meteor-deploy": "./bin/cli.js"
+  },
+  "main": "lib/meteor-deploy",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xenolf/meteor-deploy.git"
+  },
+  "keywords": [
+    "meteor",
+    "deploy"
+  ],
+  "author": "azhwkd",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "gitHead": "154e3cbd2224193fda12a2444c30249ddfc8801c",
+  "dependencies": {
+    "jake": "~0.5.8",
+    "commander": "~1.1.1",
+    "ssh2": "~0.1.11"
+  }
+}
