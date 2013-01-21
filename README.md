@@ -1,7 +1,10 @@
 meteor-deploy
 =============
 
-Deploy meteor applications to your own servers.
+Deploy meteor applications to your own servers using SSH and SFTP.
+Pull and feature requests are encouraged.
+
+
 This package will deploy your meteor application in a way to be able to rollback to a previous deployment.
 Basic filestructure is:
 ```
