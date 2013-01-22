@@ -132,7 +132,7 @@ namespace('deploy', function() {
     }, true);
 
     desc('Put contents of repository to remote server');
-    task('putremote', ['deploy:checkout', 'meteor:bundle', 'deploy:createPayloadDir'], function () {
+    task('putremote', ['deploy:clone', 'deploy:checkoutRef', 'meteor:bundle', 'deploy:createPayloadDir'], function () {
 
         action.notice('Starting SFTP upload...');
 
@@ -147,6 +147,41 @@ namespace('deploy', function() {
                 fail();
             }
         });
+    }, true);
+
+    desc('Checks out a git ref or the latest ref if none is specified.');
+    task('checkoutRef', ['deploy:switchToTmp'], function () {
+
+        // determine latest ref
+        action.local("git for-each-ref  --sort=-authordate "
+                    + "--format='%(refname)' --count=1", function (exitcode, stdout) {
+
+            if (stdout || global.program.deployConfig.ref) {
+
+                stdout = stdout.replace(/'/g, '').split('/').splice(2,2).join('/').trim();
+
+                var ref = global.program.deployConfig.ref ? global.program.deployConfig.ref : stdout;
+
+                action.local("git reset --hard " + ref, function (exitcode, stdout) {
+
+                    if (exitcode === 0) {
+                        action.success('Reset HEAD to ' + ref);
+                        complete();
+                    }
+                    else {
+                        action.error('Failed to reset HEAD to ' + ref);
+                        fail();
+                    }
+
+                });
+            } else {
+
+                action.error('Could not determine latest ref.');
+                fail();
+
+            }
+        });
+
     }, true);
 
     desc('Creates the remote payload directory for the upload');
@@ -181,20 +216,77 @@ namespace('deploy', function() {
 
     }, true);
 
-    desc('Checkout a copy of the repository to a temporary directory');
-    task('checkout', ['deploy:createtempdir'], function () {
-        action.local('git checkout-index --prefix=' +
-            global.program.deployConfig.tempdir + ' -a -f', function (exitcode) {
+    desc('Clone a copy of the repository to a temporary directory');
+    task('clone', ['deploy:createtempdir', 'deploy:getGitRemote'], function () {
+        action.local('git clone ' + global.program.deployConfig.gitRemote + ' ' +
+            global.program.deployConfig.tempdir, function (exitcode) {
 
             if (exitcode === 0) {
-                action.success('Repo checked out to a temporary directory');
+                action.success('Repo cloned into a temporary directory');
                 complete();
             } else {
-                action.error('Could not checkout a copy of the repo');
+                action.error('Could not clone the repository from the remote ' + global.program.deployConfig.gitRemote);
                 fail();
             }
 
         });
+    }, true);
+
+    desc('Get the remote git repository uri from the repository.');
+    task('getGitRemote', function() {
+
+        action.local('git remote -v', function (exitcode, stdout) {
+
+            if (stdout)
+            {
+                if (stdout.indexOf('fatal') === -1)
+                {
+                    var remotes = stdout.split('\n');
+
+                    if (!global.program.deployConfig.ref)
+                    {
+                        // select the first remote when no ref is specified.
+                        global.program.deployConfig.gitRemote = remotes[0].replace(/\s\(([^\)]+)\)/g, '').split('\t')[1];
+                    }
+                    else
+                    {
+                        // if a ref is specified, search for a matching remote.
+                        var ref = global.program.deployConfig.ref.split('/')[0];
+                        for (var value in remotes)
+                        {
+                            var keyValue = value.replace(/\s\(([^\)]+)\)/g, '').split('\t');
+                            if (keyValue[0] === ref)
+                            {
+                                global.program.deployConfig.gitRemote = keyValue[1];
+                            }
+                        }
+                    }
+
+                    if (global.program.deployConfig.gitRemote && global.program.deployConfig.gitRemote.indexOf('https') === -1)
+                    {
+                        action.success("Found git remote " + global.program.deployConfig.gitRemote);
+                        complete();
+                    }
+                    else
+                    {
+                        action.error("Failed to determine git remote. (Only SSH git remotes are supported)");
+                        fail();
+                    }
+                }
+                else
+                {
+                    action.error("Local directory is no git repository.");
+                    fail();
+                }
+            }
+            else
+            {
+                action.error("Couldn't determine git remote.");
+                fail();
+            }
+
+        });
+
     }, true);
 
     desc('Creates a temporary directory');
@@ -308,7 +400,7 @@ namespace('meteor', function() {
     }, true);
 
     desc('Bundle meteor to a deployment tar.gz');
-    task('bundle', ['deploy:switchToTmp'], function () {
+    task('bundle', function () {
 
         var bundler = global.program.mrt ? 'mrt' : 'meteor';
 
