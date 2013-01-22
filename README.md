@@ -49,7 +49,7 @@ The deployConfig node is the root of all evil.
 Under it there are so called environment nodes. For every environment you want to deploy to you can add a new object
 and so every environment can have its own server and credentials.
 * **remote** The server you want to deploy to. Has to have an SSH server with SFTP subsystem.
-* **port** The port of your SSH server. Defaults to 22 if not declared otherwise.
+* **port** (Optional) The port of your SSH server. Defaults to 22 if not declared otherwise.
 * **user** The username to use for the SSH connection.
 * **cert** The private key file for your SSH user.
 * **passphrase** (Optional) Passphrase for your SSH cert. Only needed if your cert has one set.
