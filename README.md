@@ -54,7 +54,7 @@ and so every environment can have its own server and credentials.
 * **cert** The private key file for your SSH user.
 * **passphrase** (Optional) Passphrase for your SSH cert. Only needed if your cert has one set.
 * **remotePath** The absolute path on the server where you want to run the app.
-* **ref** (Optional) a git reference in the form of <remote>/<branch>. The git HEAD will get reset to this reference. Defaults to the latest ref.
+* **ref** (Optional) a git reference in the form of [remote]/[branch]. The git HEAD will get reset to this reference. Defaults to the latest ref.
 
 ### Usage
 ```bash
