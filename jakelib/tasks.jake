@@ -104,7 +104,7 @@ namespace('deploy', function() {
     }, true);
 
     desc('Remove archived deployment');
-    task('rmarchive', ['meteor:installdeps'], function () {
+    task('rmarchive', function () {
 
         var env = global.program.env + '/';
         global.program.deployConfig.linkpath = global.program.deployConfig.remotePath + env;
