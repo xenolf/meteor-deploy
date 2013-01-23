@@ -104,7 +104,7 @@ namespace('deploy', function() {
     }, true);
 
     desc('Remove archived deployment');
-    task('rmarchive', function () {
+    task('rmarchive', ['deploy:putremote', 'meteor:moveBundleFolder', 'meteor:deleteBundleFolder', 'meteor:deleteBundleFile'], function () {
 
         var env = global.program.env + '/';
         global.program.deployConfig.linkpath = global.program.deployConfig.remotePath + env;
@@ -326,7 +326,7 @@ namespace('deploy', function() {
 namespace('meteor', function() {
 
     desc('Install dependencies via npm');
-    task('installdeps', ['deploy:putremote', 'meteor:moveBundleFolder', 'meteor:deleteBundleFolder', 'meteor:deleteBundleFile'], function () {
+    task('installdeps', function () {
 
         action.remote('cd ' + global.program.deployConfig.payload +
             '/server && npm install fibers --production', function (exitcode) {
