@@ -1,7 +1,7 @@
 
 
 desc('Deploy a given env to the target host.');
-task('deployMeteor',['deploy:symlink', 'deploy:cleanUp'], function() {
+task('deployMeteor',['deploy:symlink', 'deploy:restart', 'deploy:cleanUp'], function() {
     console.log('Everything done!');
 });
 

@@ -321,6 +321,110 @@ namespace('deploy', function() {
         action.closeRemote();
     });
 
+    desc('Common task for restarting things. Checks for set program options to decide for a program.');
+    task('restart', function () {
+
+        if (global.program.forever) {
+            jake.Task['deploy:forever'].invoke();
+        }
+
+    });
+
+    desc('Attempts to start/restart your application using forever');
+    task('forever', ['deploy:readForever'], function () {
+
+        if (global.program.deployConfig.foreverRestart) {
+
+            action.notice('Restarting...');
+
+            action.remote('forever restart ' + global.program.deployConfig.linkpath + global.program.deployConfig.name + '/main.js', function (exitcode) {
+
+                if (exitcode === 0) {
+                    action.success('Seems like restart was successful! Try the site manuall to confirm.');
+                    complete();
+                } else {
+                    action.error('Failed to restart the process. Exitcode ' + exitcode);
+                    fail();
+                }
+
+            });
+
+        } else {
+
+            action.notice('Starting new instance...');
+
+            action.remote('forever start ' + global.program.deployConfig.linkpath + global.program.deployConfig.name + '/main.js', function (exitcode) {
+
+                if (exitcode === 0) {
+                    action.success('Seems like the start was successful! Try the site manuall to confirm.');
+                    complete();
+                } else {
+                    action.error('Failed to start the process. Exitcode ' + exitcode);
+                    fail();
+                }
+
+            });
+
+        }
+
+    }, true);
+
+    desc('Checks `which forever` for a server forever installation');
+    task('checkForForever', function() {
+
+        action.remote('which forever', function (exitcode, stdout) {
+
+            // if we get a stdout means that we have found forever.
+            if (stdout && exitcode === 0) {
+
+                action.success('Forever is installed on the remote.');
+                complete();
+
+            } else {
+                action.error('Failed to locate forever on the remote server.');
+                fail();
+            }
+
+        });
+
+    }, true);
+
+    desc('Reads the forever list output to determine if an instance of this app is already running');
+    task('readForever', ['deploy:checkForForever'], function() {
+
+        action.remote('forever list', function(exitcode, stdout) {
+
+            if (exitcode === 0 && stdout) {
+
+                var lines = stdout.split('\n');
+
+                for (var index in lines) {
+
+                    if(lines[index].indexOf(global.program.deployConfig.linkpath + global.program.deployConfig.name + '/main.js') !== -1)
+                    {
+                        global.program.deployConfig.foreverRestart = true;
+
+                        action.success('Found running instance in forever. Trying to restart.');
+                        complete();
+                        return;
+                    }
+
+                }
+
+                action.notice('No running instance found. Will start a new instance.');
+                complete();
+
+            } else {
+
+                action.error('forever list failed with exitcode ' + exitcode);
+                fail();
+
+            }
+
+        });
+
+    }, true);
+
 });
 
 namespace('meteor', function() {
