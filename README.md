@@ -40,7 +40,11 @@ Imagine the following package.json:
       "cert": "/path/to/my/private/key",
       "passphrase": "coolPass101",
       "remotePath": "/path/where/my/apps/should/run",
-      "ref": "origin/alpha"
+      "ref": "origin/alpha",
+      "runPort": "3000",
+      "rootUrl": "http://coolurl.com",
+      "mongoUrl": "mongodb://localhost:27017/meteor",
+      "mailUrl": "smtp://..."
     }
   }
 }
@@ -48,6 +52,7 @@ Imagine the following package.json:
 The deployConfig node is the root of all evil.
 Under it there are so called environment nodes. For every environment you want to deploy to you can add a new object
 and so every environment can have its own server and credentials.
+#### Standard options
 * **remote** The server you want to deploy to. Has to have an SSH server with SFTP subsystem.
 * **port** (Optional) The port of your SSH server. Defaults to 22 if not declared otherwise.
 * **user** The username to use for the SSH connection.
@@ -55,6 +60,12 @@ and so every environment can have its own server and credentials.
 * **passphrase** (Optional) Passphrase for your SSH cert. Only needed if your cert has one set.
 * **remotePath** The absolute path on the server where you want to run the app.
 * **ref** (Optional) a git reference in the form of [remote]/[branch]. The git HEAD will get reset to this reference. Defaults to the latest ref.
+
+#### Forever options
+* **runPort** (Optional) If specified then this value will get passed to meteor in the PORT env var. Defaults to 3000
+* **rootUrl** The url root of your application.
+* **mongoUrl** (Optional) The connection string to your mongoDB. Defaults to mongodb://localhost:27017/meteor
+* **mailUrl** (Optional) If your app uses mail you have to set this to a valid smtp uri.
 
 ### Usage
 ```bash
@@ -71,4 +82,5 @@ Usage: meteor-deploy [options] [command]
     -V, --version        output the version number
     --env <environment>  Deploy to the provided environment.
     --mrt                Deploy using meteorite. Default false.
+    -f, --forever        Attempt to start/restart the program on the server using forever.
 ```
