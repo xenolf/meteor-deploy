@@ -326,12 +326,24 @@ namespace('deploy', function() {
 
         if (global.program.forever) {
             jake.Task['deploy:forever'].invoke();
+            setTimeout(function() {
+                complete();
+            }, 5000);
         }
 
-    });
+    }, true);
 
     desc('Attempts to start/restart your application using forever');
     task('forever', ['deploy:readForever'], function () {
+
+        var envVars = "";
+        for (var key in global.program.deployConfig.envVars) {
+
+            if(global.program.deployConfig.envVars[key] !== '') {
+                envVars += key + '=' + global.program.deployConfig.envVars[key] + ' ';
+            }
+
+        }
 
         if (global.program.deployConfig.foreverRestart) {
 
@@ -340,7 +352,7 @@ namespace('deploy', function() {
             action.remote('forever restart ' + global.program.deployConfig.linkpath + global.program.deployConfig.name + '/main.js', function (exitcode) {
 
                 if (exitcode === 0) {
-                    action.success('Seems like restart was successful! Try the site manuall to confirm.');
+                    action.success('Seems like restart was successful! Try the site manually to confirm.');
                     complete();
                 } else {
                     action.error('Failed to restart the process. Exitcode ' + exitcode);
@@ -353,10 +365,10 @@ namespace('deploy', function() {
 
             action.notice('Starting new instance...');
 
-            action.remote('forever start ' + global.program.deployConfig.linkpath + global.program.deployConfig.name + '/main.js', function (exitcode) {
+            action.remote(envVars + 'forever start ' + global.program.deployConfig.linkpath + global.program.deployConfig.name + '/main.js', function (exitcode) {
 
                 if (exitcode === 0) {
-                    action.success('Seems like the start was successful! Try the site manuall to confirm.');
+                    action.success('Seems like the start was successful! Try the site manually to confirm.');
                     complete();
                 } else {
                     action.error('Failed to start the process. Exitcode ' + exitcode);
