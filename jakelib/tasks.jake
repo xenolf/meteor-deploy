@@ -132,7 +132,7 @@ namespace('deploy', function() {
     }, true);
 
     desc('Put contents of repository to remote server');
-    task('putremote', ['deploy:clone', 'deploy:checkoutRef', 'meteor:bundle', 'deploy:createPayloadDir'], function () {
+    task('putremote', ['deploy:clone', 'deploy:checkoutRef', 'deploy:submodules', 'meteor:bundle', 'deploy:createPayloadDir'], function () {
 
         action.notice('Starting SFTP upload...');
 
@@ -147,6 +147,23 @@ namespace('deploy', function() {
                 fail();
             }
         });
+    }, true);
+
+    desc('Initializes and updates any git submodules present.');
+    task('submodules', function () {
+
+        action.local('git submodule update --init --recursive', function (exitcode, stdout) {
+
+            if (exitcode === 0) {
+                action.success('Initialized submodules.');
+                complete();
+            } else {
+                action.error('Failed to initialize submodules.');
+                fail();
+            }
+
+        });
+
     }, true);
 
     desc('Checks out a git ref or the latest ref if none is specified.');
