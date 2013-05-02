@@ -1,6 +1,6 @@
 {
   "name": "meteor-deploy",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Deploy meteor apps to your custom server using SSH!",
   "bin": {
       "meteor-deploy": "./bin/cli.js"
