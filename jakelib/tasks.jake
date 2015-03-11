@@ -542,14 +542,18 @@ namespace('meteor', function() {
             if (exitcode === 0) {
 
                 bundler = data;
-                action.local(bundler + ' bundle ' + global.program.env + '.tar.gz', function(exitcode) {
-                    if (exitcode === 0) {
-                        action.success("Meteor application bundle created.");
-                        complete();
-                    } else {
-                        action.error('Could not bundle the meteor deployment package.');
-                        fail();
-                    }
+                // Run the meteor server to circumvent https://github.com/meteoric/ionic-sass/issues/2 and
+                // https://github.com/meteoric/meteor-ionic/issues/61
+                action.local('timeout 10 ' + bundler + ' run', function(exitcode) {
+                    action.local(bundler + ' bundle ' + global.program.env + '.tar.gz', function(exitcode) {
+                        if (exitcode === 0) {
+                            action.success("Meteor application bundle created.");
+                            complete();
+                        } else {
+                            action.error('Could not bundle the meteor deployment package.');
+                            fail();
+                        }
+                    });
                 });
 
             } else {
